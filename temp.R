@@ -96,7 +96,6 @@ gini_density_sorted <- gini_density[order(gini_density$y, decreasing = T), ]
 gini_density_sorted[["cumsum"]] <- cumsum(gini_density_sorted$y)
 
 threshold <- 0.95 * sum(gini_density_sorted$y)
-# threshold <- quantile(gini_density_sorted$cumsum, 0.95)
 HDPI <- range(gini_density_sorted[gini_density_sorted[["cumsum"]] <= threshold, "x"])
 
 hist(gini, breaks = 30)
@@ -112,34 +111,26 @@ abline(v = HDPI[2], col = "red")
 wind_dir <- c(20, 314, 285, 40, 308, 314, 299, 296, 303, 326)
 wind_dir_rad <- c(-2.79, 2.33, 1.83, -2.44, 2.23, 2.33, 2.07, 2.02, 2.14, 2.54)
 
-# dmises <- function(y, mu = 2.4, kapa){
-#   exp(kapa *cos(y-mu)) / (2*pi*besselI(kapa, 0))
-# }
 
 lambda <- 0.5
 mu <- 2.4
 n <- length(wind_dir_rad)
 # 3.a
 
-# post ~(lambda/(2.pi.Ik)^n)  * exp(sum(cos(yi-mu))-lambda)
-
-
-
 posterior <- function(kapa, y = wind_dir_rad){
-  lambda / (2 * pi * besselI(kapa, 0))^n * exp(kapa * (sum(cos(y - mu)) - lambda))
+exp(kapa * (sum(cos(y - mu)) - lambda))/ (besselI(kapa, 0))^n 
 }
 
 kapas <- seq(0.05, 10, by = 0.05)
 
 post_dist_y <- posterior(kapas)
 
-plot(kapas, post_dist_y, type = "l")
+post_dist_y <- post_dist_y/integrate(posterior, 0,10 )$value
 
-sum(post_dist_y)
-# sum(post_dist_y/ sum(post_dist_y))
-# plot(post_dist_y/ sum(post_dist_y))
+plot(kapas, post_dist_y, type = "l")
 
 # 3.b
 
 mode_post <- kapas[which.max(post_dist_y)]
 abline(v = mode_post)
+
